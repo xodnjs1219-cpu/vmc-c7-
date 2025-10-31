@@ -1,8 +1,10 @@
 """
 Repository layer for authentication.
 """
+
 from typing import Optional
-from .models import User
+from .models import User, TokenBlacklist
+from datetime import datetime
 
 
 class UserRepository:
