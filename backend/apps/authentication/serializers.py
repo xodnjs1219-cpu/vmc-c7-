@@ -26,3 +26,16 @@ class LoginResponseSerializer(serializers.Serializer):
     access_token = serializers.CharField()
     refresh_token = serializers.CharField()
     user = UserSerializer()
+
+
+class LogoutSerializer(serializers.Serializer):
+    """Logout request DTO."""
+
+    refresh_token = serializers.CharField(required=True, write_only=True)
+
+
+class LogoutResponseSerializer(serializers.Serializer):
+    """Logout response DTO."""
+
+    message = serializers.CharField()
+    status = serializers.CharField()

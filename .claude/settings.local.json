@@ -14,7 +14,12 @@
       "Bash(python -m pytest:*)",
       "Bash(venv/Scripts/pytest --version)",
       "Bash(../venv/Scripts/pytest apps/authentication/tests/test_services.py::TestAuthServiceLogin -v)",
-      "Bash(../venv/Scripts/pytest apps/authentication/tests/test_views.py::TestLoginViewAPI -v)"
+      "Bash(../venv/Scripts/pytest apps/authentication/tests/test_views.py::TestLoginViewAPI -v)",
+      "Bash(npm test:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== UC-$i ===\")",
+      "Bash(head:*)",
+      "Bash(done)"
     ]
   },
   "enableAllProjectMcpServers": true,

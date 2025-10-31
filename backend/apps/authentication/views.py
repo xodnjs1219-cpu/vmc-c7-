@@ -35,3 +35,30 @@ class LoginView(APIView):
         # 3. Return response
         response_serializer = LoginResponseSerializer(result)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    """
+    POST /api/auth/logout/
+
+    User logout API - invalidates refresh token
+    """
+
+    def post(self, request):
+        """Logout and blacklist refresh token."""
+        from .serializers import LogoutSerializer, LogoutResponseSerializer
+        
+        # 1. Validate input
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 2. Call service layer
+        service = AuthService()
+        result = service.logout(
+            refresh_token=serializer.validated_data['refresh_token'],
+            user_id=getattr(request.user, 'id', None) or 0,
+        )
+
+        # 3. Return response
+        response_serializer = LogoutResponseSerializer(result)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

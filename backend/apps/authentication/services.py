@@ -60,3 +60,30 @@ class AuthService:
                 'role': user.role,
             },
         }
+
+    def logout(self, refresh_token: str, user_id: int) -> Dict[str, Any]:
+        """
+        Logout user and blacklist refresh token.
+
+        Args:
+            refresh_token: Refresh token to invalidate
+            user_id: User ID for context
+
+        Returns:
+            Dictionary with success message
+        """
+        from .repositories import TokenBlacklistRepository
+        
+        blacklist_repo = TokenBlacklistRepository()
+        success = blacklist_repo.add_to_blacklist(refresh_token, user_id)
+        
+        if success:
+            return {
+                'message': '로그아웃되었습니다',
+                'status': 'success'
+            }
+        else:
+            return {
+                'message': '로그아웃 처리 중 오류가 발생했습니다',
+                'status': 'error'
+            }

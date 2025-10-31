@@ -25,5 +25,5 @@ export interface RefreshResponse {
 }
 
 export interface LogoutRequest {
-  refresh: string;
+  refresh_token: string;
 }

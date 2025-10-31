@@ -38,3 +38,22 @@ class User(models.Model):
         """Check if raw password matches hashed password."""
         from django.contrib.auth.hashers import check_password
         return check_password(raw_password, self.password_hash)
+
+
+class TokenBlacklist(models.Model):
+    """JWT Refresh Token blacklist model."""
+
+    id = models.BigAutoField(primary_key=True)
+    token = models.TextField(unique=True, db_index=True)
+    user_id = models.BigIntegerField(db_index=True)
+    blacklisted_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'token_blacklist'
+        managed = False
+
+    def __str__(self):
+        return f"Blacklisted token for user {self.user_id}"

@@ -42,3 +42,33 @@ class UserRepository:
                 setattr(user, key, value)
         user.save()
         return user
+
+
+class TokenBlacklistRepository:
+    """Repository for TokenBlacklist model."""
+
+    @staticmethod
+    def add_to_blacklist(token: str, user_id: int, expires_at: Optional[datetime] = None) -> bool:
+        """Add refresh token to blacklist."""
+        try:
+            TokenBlacklist.objects.create(
+                token=token,
+                user_id=user_id,
+                expires_at=expires_at
+            )
+            return True
+        except Exception:
+            return False
+
+    @staticmethod
+    def is_blacklisted(token: str) -> bool:
+        """Check if token is blacklisted."""
+        return TokenBlacklist.objects.filter(token=token).exists()
+
+    @staticmethod
+    def get_blacklist_entry(token: str) -> Optional[TokenBlacklist]:
+        """Get blacklist entry for token."""
+        try:
+            return TokenBlacklist.objects.get(token=token)
+        except TokenBlacklist.DoesNotExist:
+            return None
