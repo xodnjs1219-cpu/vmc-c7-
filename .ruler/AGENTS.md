@@ -24,14 +24,16 @@
 - Ensure zero TypeScript type errors, ESLint errors, and build errors
 - Never use hardcoded values. Manage all values through constants, environment variables, or configuration files
 - **Leverage appropriate custom agents based on the nature of the work**:
-  - `usecase-writer`: when creating new usecase documentation for specific features
-  - `plan-writer`: when creating detailed planning documents for usecases
+  - `usecase_writer`: when creating new usecase documentation for specific features
+  - `database_writer`: when designing databases for features based on userflow
+  - `status_management_writer`: when creating state management documentation for specific pages
+  - `pageplan_writer`: when creating detailed page-level planning documents for usecases
+  - `caseplan_writer`: when creating detailed feature-level planning documents for usecases
   - `implementer`: when implementing plan.md
   - `implement_checker`: when verifying all features in spec/plan documents are properly implemented
-  - `usecase-checker`: when verifying all features in spec/plan documents are properly implemented
-  - `database_writer`: when designing databases for features based on userflow
-  - `refator_planner`: when reviewing currently written code
-  - `refator_reviewer`: when reviewing refactoring plans
+  - `plan_checker`: when checking if plan documents are complete and correct
+  - `refactor_planner`: when reviewing currently written code
+  - `refactor_reviewer`: when reviewing refactoring plans
 
 ## Library
 

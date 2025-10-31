@@ -81,4 +81,35 @@ CREATE INDEX IF NOT EXISTS idx_uploaded_data_college_department
 CREATE INDEX IF NOT EXISTS idx_uploaded_data_metadata
     ON uploaded_data USING GIN(metadata);
 
+-- ============================================================================
+-- 5. updated_at 자동 업데이트 트리거
+-- ============================================================================
+
+-- 트리거 함수 생성 (이미 존재하면 스킵)
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- users 테이블 트리거
+CREATE TRIGGER trigger_users_update_timestamp
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+-- data_upload_logs 테이블 트리거
+CREATE TRIGGER trigger_data_upload_logs_update_timestamp
+BEFORE UPDATE ON data_upload_logs
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+-- uploaded_data 테이블 트리거
+CREATE TRIGGER trigger_uploaded_data_update_timestamp
+BEFORE UPDATE ON uploaded_data
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
 COMMIT;

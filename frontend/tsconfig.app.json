@@ -8,7 +8,7 @@
   "types": ["vite/client", "vitest", "@testing-library/jest-dom"],
     "baseUrl": "./src",
     "paths": {
-      "@/mocks/*": ["mocks/*"]
+      "@/*": ["./*"]
     },
     "skipLibCheck": true,
 
