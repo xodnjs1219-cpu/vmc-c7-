@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # Custom apps
     'apps.core',
     'apps.authentication',
+    'apps.users',
     'apps.data_upload',
     'apps.dashboard',
 ]
