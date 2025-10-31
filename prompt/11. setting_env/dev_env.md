@@ -62,4 +62,5 @@ context7-mcp를 사용해 작성하세요
 @docs\techstack.md
 
 문서를 참고해서 현재 프로젝트에 필요한 라이브러리 설치나 개발환경을 설정해주세요
+그리고 예시 Codebase Structure을 생성해주세요.
 ```
