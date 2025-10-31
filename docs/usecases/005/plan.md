@@ -323,7 +323,7 @@ class DashboardKPIView(APIView):
 
 ## 7. Phase 4: Frontend - dashboardReducer
 
-### 7.1 Test Scenarios (Unit Tests)
+### 7.1 Test Scenarios (Unit Tests - 순수함수)
 
 ```typescript
 // path: frontend/src/reducers/dashboardReducer.test.ts
@@ -415,49 +415,7 @@ export function dashboardReducer(state: DashboardState, action: DashboardAction)
 
 ## 8. Phase 5: Frontend - useDashboard Hooks
 
-### 8.1 Test Scenarios (Unit Tests with MSW)
-
-```typescript
-// path: frontend/src/hooks/queries/useDashboard.test.ts
-
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { http, HttpResponse } from 'msw';
-import { server } from '@/mocks/server';
-import { useDashboardKPI } from './useDashboard';
-
-const createWrapper = () => {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
-
-test('KPI 데이터 조회 성공', async () => {
-  // Given: MSW로 성공 응답
-  server.use(
-    http.get('/api/dashboard/kpi/', () => {
-      return HttpResponse.json({
-        data: [
-          { college: '공과대학', department: '컴퓨터공학과', graduation_rate: 88.5 }
-        ]
-      });
-    })
-  );
-
-  // When
-  const { result } = renderHook(() => useDashboardKPI({ year: 2025, semester: 'all' }), {
-    wrapper: createWrapper()
-  });
-
-  // Then
-  await waitFor(() => expect(result.current.isSuccess).toBe(true));
-  expect(result.current.data?.data).toHaveLength(1);
-  expect(result.current.data?.data[0].department).toBe('컴퓨터공학과');
-});
-```
-
-### 8.2 Implementation (useDashboard Hooks)
+### 8.1 Implementation (useDashboard Hooks)
 
 ```typescript
 // path: frontend/src/hooks/queries/useDashboard.ts
@@ -486,9 +444,9 @@ export const useDashboardKPI = (filters: DashboardFilters) => {
 
 ---
 
-## 9. Phase 6: Frontend - Chart Components
+## 9. Phase 6: Frontend - Chart Components (Integration Test)
 
-### 9.1 Test Scenarios (Component Tests)
+### 9.1 Test Scenarios (Integration Tests)
 
 ```typescript
 // path: frontend/src/components/features/Dashboard/KPIChart.test.tsx
@@ -578,11 +536,10 @@ export const KPIChart = ({ filters }: KPIChartProps) => {
 - [ ] URL 라우팅 설정
 
 ### Frontend
-- [ ] dashboardReducer 단위 테스트 작성 (4개 액션)
+- [ ] dashboardReducer 단위 테스트 작성 (4개 액션 - 순수함수)
 - [ ] dashboardReducer 구현
-- [ ] useDashboard hooks 단위 테스트 작성 (5개 hooks)
-- [ ] useDashboard hooks 구현 (TanStack Query)
-- [ ] KPIChart 컴포넌트 테스트 작성
+- [ ] useDashboard hooks 구현 (TanStack Query) - 단위 테스트 없음
+- [ ] KPIChart 컴포넌트 integration 테스트 작성
 - [ ] KPIChart 컴포넌트 구현 (Recharts)
 - [ ] PublicationChart, ResearchChart, StudentChart 구현
 - [ ] FilterBar 컴포넌트 구현
@@ -597,11 +554,11 @@ export const KPIChart = ({ filters }: KPIChartProps) => {
 
 ## 11. Test Coverage Goal
 
-- **Backend Unit Tests**: 80%+ (Repository, Service)
+- **Backend Unit Tests**: 80%+ (Repository, Service - 순수 비즈니스 로직)
 - **Backend E2E Tests**: 100% (5개 Dashboard APIs)
-- **Frontend Unit Tests**: 80%+ (dashboardReducer, useDashboard hooks)
-- **Frontend Component Tests**: 80%+ (Charts)
-- **Frontend E2E Tests**: 100% (대시보드 필터링 플로우)
+- **Frontend Unit Tests**: dashboardReducer만 (순수함수)
+- **Frontend Integration Tests**: 80%+ (Chart 컴포넌트들 - MSW 사용)
+- **Frontend E2E Tests**: 100% (대시보드 필터링 플로우 - Playwright)
 
 ---
 

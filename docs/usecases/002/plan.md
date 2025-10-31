@@ -452,79 +452,7 @@ class LogoutSerializer(serializers.Serializer):
 
 ## 7. Phase 4: Frontend - useLogout Hook
 
-### 7.1 Test Scenarios (Unit Tests with MSW)
-
-```typescript
-// path: frontend/src/hooks/queries/useAuth.test.ts
-
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { http, HttpResponse } from 'msw';
-import { server } from '@/mocks/server';
-import { useLogout } from './useAuth';
-
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
-  });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
-
-test('로그아웃 성공 시 localStorage 및 캐시 초기화', async () => {
-  // Given: MSW로 성공 응답 설정
-  server.use(
-    http.post('/api/auth/logout/', () => {
-      return HttpResponse.json({
-        status: 'success',
-        message: '로그아웃되었습니다'
-      });
-    })
-  );
-
-  // localStorage 설정
-  localStorage.setItem('access_token', 'fake_access');
-  localStorage.setItem('refresh_token', 'fake_refresh');
-
-  // When: useLogout hook 실행
-  const { result } = renderHook(() => useLogout(), { wrapper: createWrapper() });
-
-  result.current.mutate({ refresh_token: 'fake_refresh' });
-
-  // Then: 성공 응답 및 localStorage 삭제 확인
-  await waitFor(() => expect(result.current.isSuccess).toBe(true));
-  expect(localStorage.getItem('access_token')).toBeNull();
-  expect(localStorage.getItem('refresh_token')).toBeNull();
-});
-
-test('로그아웃 실패 시에도 localStorage 삭제', async () => {
-  // Given: MSW로 실패 응답
-  server.use(
-    http.post('/api/auth/logout/', () => {
-      return HttpResponse.json(
-        { message: '서버 오류' },
-        { status: 500 }
-      );
-    })
-  );
-
-  localStorage.setItem('access_token', 'fake_access');
-  localStorage.setItem('refresh_token', 'fake_refresh');
-
-  // When
-  const { result } = renderHook(() => useLogout(), { wrapper: createWrapper() });
-
-  result.current.mutate({ refresh_token: 'fake_refresh' });
-
-  // Then: 실패해도 localStorage는 삭제됨
-  await waitFor(() => expect(result.current.isError).toBe(true));
-  expect(localStorage.getItem('access_token')).toBeNull();
-  expect(localStorage.getItem('refresh_token')).toBeNull();
-});
-```
-
-### 7.2 Implementation (useLogout Hook)
+### 7.1 Implementation (useLogout Hook)
 
 ```typescript
 // path: frontend/src/hooks/queries/useAuth.ts
@@ -556,7 +484,7 @@ export const useLogout = () => {
 };
 ```
 
-### 7.3 API Function
+### 7.2 API Function
 
 ```typescript
 // path: frontend/src/api/endpoints/auth.api.ts
@@ -570,9 +498,9 @@ export const logoutApi = async (data: { refresh_token: string }): Promise<void> 
 
 ---
 
-## 8. Phase 5: Frontend - LogoutButton Component
+## 8. Phase 5: Frontend - LogoutButton Component (Integration Test)
 
-### 8.1 Test Scenarios (Component Tests)
+### 8.1 Test Scenarios (Integration Tests)
 
 ```typescript
 // path: frontend/src/components/common/LogoutButton.test.tsx
@@ -705,9 +633,8 @@ test.describe('로그아웃 E2E', () => {
 
 ### Frontend
 - [ ] logoutApi 함수 작성
-- [ ] useLogout hook 단위 테스트 작성 (2개 시나리오)
-- [ ] useLogout hook 구현 (onMutate, onSettled)
-- [ ] LogoutButton 컴포넌트 테스트 작성
+- [ ] useLogout hook 구현 (onMutate, onSettled) - 단위 테스트 없음
+- [ ] LogoutButton 컴포넌트 integration 테스트 작성
 - [ ] LogoutButton 컴포넌트 구현
 - [ ] E2E 테스트 작성 (Playwright)
 
@@ -719,11 +646,10 @@ test.describe('로그아웃 E2E', () => {
 
 ## 11. Test Coverage Goal
 
-- **Backend Unit Tests**: 80%+ (TokenBlacklistRepository, AuthService)
+- **Backend Unit Tests**: 80%+ (TokenBlacklistRepository, AuthService - 순수 비즈니스 로직)
 - **Backend E2E Tests**: 100% (LogoutView API)
-- **Frontend Unit Tests**: 80%+ (useLogout hook)
-- **Frontend Component Tests**: 80%+ (LogoutButton)
-- **Frontend E2E Tests**: 100% (로그아웃 플로우)
+- **Frontend Integration Tests**: 80%+ (LogoutButton 컴포넌트 - MSW 사용)
+- **Frontend E2E Tests**: 100% (로그아웃 플로우 - Playwright)
 
 ---
 

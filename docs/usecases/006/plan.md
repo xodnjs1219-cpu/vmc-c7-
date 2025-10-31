@@ -457,7 +457,7 @@ class ReportExportView(APIView):
 
 ## 7. Phase 5: Frontend - reportReducer
 
-### 7.1 Test Scenarios (Unit Tests)
+### 7.1 Test Scenarios (Unit Tests - 순수함수)
 
 ```typescript
 // path: frontend/src/reducers/reportReducer.test.ts
@@ -706,54 +706,7 @@ export function useReportContext() {
 
 ## 9. Phase 7: Frontend - useReport Hooks
 
-### 9.1 Test Scenarios (Unit Tests with MSW)
-
-```typescript
-// path: frontend/src/hooks/queries/useReport.test.tsx
-
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { http, HttpResponse } from 'msw';
-import { server } from '@/mocks/server';
-import { ReportProvider } from '@/contexts/ReportContext';
-import { useReportData } from './useReport';
-
-const createWrapper = () => {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <ReportProvider>{children}</ReportProvider>
-    </QueryClientProvider>
-  );
-};
-
-test('리포트 데이터 조회 성공', async () => {
-  // Given: MSW로 성공 응답
-  server.use(
-    http.get('/api/reports/performance/', () => {
-      return HttpResponse.json({
-        count: 2,
-        page: 1,
-        limit: 20,
-        data: [
-          { id: 1, year: 2025, college: '공과대학', department: '컴퓨터공학과', graduation_rate: 88.5 }
-        ],
-        summary: { avg_graduation_rate: 79.1 }
-      });
-    })
-  );
-
-  // When
-  const { result } = renderHook(() => useReportData(), { wrapper: createWrapper() });
-
-  // Then
-  await waitFor(() => expect(result.current.isSuccess).toBe(true));
-  expect(result.current.data?.count).toBe(2);
-  expect(result.current.data?.data).toHaveLength(1);
-});
-```
-
-### 9.2 Implementation (useReportData)
+### 9.1 Implementation (useReportData)
 
 ```typescript
 // path: frontend/src/hooks/queries/useReport.ts
@@ -833,11 +786,11 @@ export const useExportReport = () => {
 - [ ] URL 라우팅 설정
 
 ### Frontend
-- [ ] reportReducer 단위 테스트 작성 (9개 액션)
+- [ ] reportReducer 단위 테스트 작성 (9개 액션 - 순수함수)
 - [ ] reportReducer 구현
 - [ ] ReportContext 구현 (Context + URL 동기화)
-- [ ] useReportData hook 단위 테스트 작성
-- [ ] useReportData, useExportReport hooks 구현
+- [ ] useReportData, useExportReport hooks 구현 - 단위 테스트 없음
+- [ ] FilterPanel integration 테스트 작성
 - [ ] FilterPanel 컴포넌트 구현
 - [ ] DataTable 컴포넌트 구현 (정렬 클릭)
 - [ ] Pagination 컴포넌트 구현
@@ -853,11 +806,11 @@ export const useExportReport = () => {
 
 ## 11. Test Coverage Goal
 
-- **Backend Unit Tests**: 80%+ (Repository, ExportService)
+- **Backend Unit Tests**: 80%+ (Repository, ExportService - 순수 비즈니스 로직)
 - **Backend E2E Tests**: 100% (4개 Report APIs + Export API)
-- **Frontend Unit Tests**: 80%+ (reportReducer, useReport hooks)
-- **Frontend Component Tests**: 80%+ (FilterPanel, DataTable, Pagination)
-- **Frontend E2E Tests**: 100% (필터링/정렬/페이지네이션/엑셀 다운로드 플로우)
+- **Frontend Unit Tests**: reportReducer만 (순수함수)
+- **Frontend Integration Tests**: 80%+ (FilterPanel, DataTable, Pagination - MSW 사용)
+- **Frontend E2E Tests**: 100% (필터링/정렬/페이지네이션/엑셀 다운로드 플로우 - Playwright)
 
 ---
 

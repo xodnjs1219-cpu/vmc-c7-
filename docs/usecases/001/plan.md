@@ -454,72 +454,7 @@ class LoginSerializer(serializers.Serializer):
 
 ## 6. Phase 3: Frontend - useAuth Hook
 
-### 6.1 Test Scenarios (Unit Tests with MSW)
-
-```typescript
-// path: frontend/src/hooks/queries/useAuth.test.ts
-
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { http, HttpResponse } from 'msw';
-import { server } from '@/mocks/server';
-import { useLogin } from './useAuth';
-
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
-  });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
-
-test('로그인 성공 시 토큰과 사용자 정보를 반환한다', async () => {
-  // Given: MSW로 성공 응답 설정
-  server.use(
-    http.post('/api/auth/login/', () => {
-      return HttpResponse.json({
-        access_token: 'fake_access',
-        refresh_token: 'fake_refresh',
-        user: { id: 1, username: 'admin_user', role: 'admin' }
-      });
-    })
-  );
-
-  // When: useLogin hook 실행
-  const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
-
-  result.current.mutate({ username: 'admin_user', password: 'password' });
-
-  // Then: 성공 응답 검증
-  await waitFor(() => expect(result.current.isSuccess).toBe(true));
-  expect(result.current.data?.access_token).toBe('fake_access');
-  expect(result.current.data?.user.username).toBe('admin_user');
-});
-
-test('로그인 실패 시 에러를 반환한다', async () => {
-  // Given: MSW로 실패 응답 설정
-  server.use(
-    http.post('/api/auth/login/', () => {
-      return HttpResponse.json(
-        { code: 'AUTH_FAILED', message: '아이디 또는 비밀번호가 일치하지 않습니다' },
-        { status: 401 }
-      );
-    })
-  );
-
-  // When
-  const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
-
-  result.current.mutate({ username: 'user', password: 'wrong' });
-
-  // Then
-  await waitFor(() => expect(result.current.isError).toBe(true));
-  expect(result.current.error?.message).toContain('401');
-});
-```
-
-### 6.2 Implementation (useAuth Hook)
+### 6.1 Implementation (useAuth Hook)
 
 ```typescript
 // path: frontend/src/hooks/queries/useAuth.ts
@@ -540,7 +475,7 @@ export const useLogin = () => {
 };
 ```
 
-### 6.3 API Function
+### 6.2 API Function
 
 ```typescript
 // path: frontend/src/api/endpoints/auth.api.ts
@@ -554,7 +489,7 @@ export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
 };
 ```
 
-### 6.4 TypeScript Types
+### 6.3 TypeScript Types
 
 ```typescript
 // path: frontend/src/types/dto/auth.dto.ts
@@ -578,9 +513,9 @@ export interface LoginResponse {
 
 ---
 
-## 7. Phase 4: Frontend - LoginForm Component
+## 7. Phase 4: Frontend - LoginForm Component (Integration Test)
 
-### 7.1 Test Scenarios (Component Tests)
+### 7.1 Test Scenarios (Integration Tests)
 
 ```typescript
 // path: frontend/src/components/features/Auth/LoginForm.test.tsx
@@ -810,9 +745,8 @@ test.describe('로그인 E2E', () => {
 ### Frontend
 - [ ] DTO 타입 정의 (LoginRequest, LoginResponse)
 - [ ] loginApi 함수 작성
-- [ ] useLogin hook 단위 테스트 작성 (2개 시나리오)
-- [ ] useLogin hook 구현
-- [ ] LoginForm 컴포넌트 테스트 작성 (3개 시나리오)
+- [ ] useLogin hook 구현 (단위 테스트 없음 - integration test로 검증)
+- [ ] LoginForm 컴포넌트 integration 테스트 작성 (3개 시나리오)
 - [ ] LoginForm 컴포넌트 구현 (react-hook-form + zod)
 - [ ] LoginPage 페이지 컴포넌트 작성
 - [ ] E2E 테스트 작성 (Playwright, 2개 시나리오)
@@ -828,10 +762,10 @@ test.describe('로그인 E2E', () => {
 
 ## 10. Test Coverage Goal
 
-- **Backend Unit Tests**: 80%+ (AuthService)
+- **Backend Unit Tests**: 80%+ (AuthService - 순수 비즈니스 로직)
 - **Backend E2E Tests**: 100% (LoginView API)
-- **Frontend Unit Tests**: 80%+ (useLogin hook, LoginForm)
-- **Frontend E2E Tests**: 100% (로그인 성공/실패 플로우)
+- **Frontend Integration Tests**: 80%+ (LoginForm 컴포넌트 - MSW 사용)
+- **Frontend E2E Tests**: 100% (로그인 성공/실패 플로우 - Playwright)
 
 ---
 

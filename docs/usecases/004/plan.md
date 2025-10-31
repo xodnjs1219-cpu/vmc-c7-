@@ -706,7 +706,7 @@ class UploadSerializer(serializers.Serializer):
 
 ## 8. Phase 5: Frontend - useReducer (상태 관리)
 
-### 8.1 Test Scenarios (Unit Tests)
+### 8.1 Test Scenarios (Unit Tests - 순수함수)
 
 ```typescript
 // path: frontend/src/reducers/uploadReducer.test.ts
@@ -857,9 +857,9 @@ export function uploadReducer(state: UploadState, action: UploadAction): UploadS
 
 ---
 
-## 9. Phase 6: Frontend - FileUploader Component
+## 9. Phase 6: Frontend - FileUploader Component (Integration Test)
 
-### 9.1 Test Scenarios (Component Tests)
+### 9.1 Test Scenarios (Integration Tests)
 
 ```typescript
 // path: frontend/src/components/features/Upload/FileUploader.test.tsx
@@ -1065,14 +1065,14 @@ test.describe('데이터 업로드 E2E', () => {
 - [ ] IsAdminUser 권한 클래스 작성
 
 ### Frontend
-- [ ] uploadReducer 단위 테스트 작성 (6개 액션)
+- [ ] uploadReducer 단위 테스트 작성 (6개 액션 - 순수함수)
 - [ ] uploadReducer 구현
-- [ ] DataUploadPage 컴포넌트 테스트 작성 (2개 시나리오)
+- [ ] DataUploadPage integration 테스트 작성 (2개 시나리오)
 - [ ] DataUploadPage 구현 (useReducer + XMLHttpRequest)
 - [ ] FileUploader 컴포넌트 구현
 - [ ] UploadStatus 컴포넌트 구현
 - [ ] UploadHistory 컴포넌트 구현
-- [ ] useUploadHistory hook 구현 (TanStack Query)
+- [ ] useUploadHistory hook 구현 (TanStack Query) - 단위 테스트 없음
 - [ ] E2E 테스트 작성 (Playwright)
 
 ### Infrastructure
@@ -1084,11 +1084,11 @@ test.describe('데이터 업로드 E2E', () => {
 
 ## 12. Test Coverage Goal
 
-- **Backend Unit Tests**: 80%+ (Parser, Validator, Service)
+- **Backend Unit Tests**: 80%+ (Parser, Validator, Service - 순수 비즈니스 로직)
 - **Backend E2E Tests**: 100% (DataUploadView API)
-- **Frontend Unit Tests**: 80%+ (uploadReducer, useUploadHistory)
-- **Frontend Component Tests**: 80%+ (DataUploadPage)
-- **Frontend E2E Tests**: 100% (파일 업로드 플로우)
+- **Frontend Unit Tests**: uploadReducer만 (순수함수)
+- **Frontend Integration Tests**: 80%+ (DataUploadPage 컴포넌트 - MSW 사용)
+- **Frontend E2E Tests**: 100% (파일 업로드 플로우 - Playwright)
 
 ---
 

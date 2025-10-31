@@ -674,9 +674,9 @@ class IsAdminUser(BasePermission):
 
 ---
 
-## 8. Phase 5: Frontend - UserCreateForm
+## 8. Phase 5: Frontend - UserCreateForm (Integration Test)
 
-### 8.1 Test Scenarios (Component Tests)
+### 8.1 Test Scenarios (Integration Tests)
 
 ```typescript
 // path: frontend/src/components/features/User/UserCreateForm.test.tsx
@@ -928,9 +928,9 @@ export interface CreateUserResponse {
 
 ### Frontend
 - [ ] userCreateSchema (zod) 작성 (비밀번호 정책 검증)
-- [ ] UserCreateForm 컴포넌트 테스트 작성 (2개 시나리오)
+- [ ] UserCreateForm 컴포넌트 integration 테스트 작성 (2개 시나리오)
 - [ ] UserCreateForm 구현 (react-hook-form + zod)
-- [ ] useCreateUser hook 구현
+- [ ] useCreateUser hook 구현 - 단위 테스트 없음
 - [ ] createUserApi 함수 작성
 - [ ] DTO 타입 정의 (CreateUserRequest, CreateUserResponse)
 - [ ] E2E 테스트 작성 (Playwright)
@@ -943,11 +943,10 @@ export interface CreateUserResponse {
 
 ## 11. Test Coverage Goal
 
-- **Backend Unit Tests**: 80%+ (PasswordValidator, UserRepository, UserService)
+- **Backend Unit Tests**: 80%+ (PasswordValidator, UserRepository, UserService - 순수 비즈니스 로직)
 - **Backend E2E Tests**: 100% (UserCreateView API)
-- **Frontend Unit Tests**: 80%+ (useCreateUser hook)
-- **Frontend Component Tests**: 80%+ (UserCreateForm)
-- **Frontend E2E Tests**: 100% (사용자 생성 플로우)
+- **Frontend Integration Tests**: 80%+ (UserCreateForm 컴포넌트 - MSW 사용)
+- **Frontend E2E Tests**: 100% (사용자 생성 플로우 - Playwright)
 
 ---
 
