@@ -11,12 +11,16 @@ export const API_ENDPOINTS = {
   DATA_UPLOAD: {
     UPLOAD: '/api/data-upload/upload/',
     LOGS: '/api/data-upload/logs/',
+    STATISTICS: '/api/data-upload/statistics/',
   },
   DASHBOARD: {
+    SUMMARY: '/api/dashboard/summary/',
     KPI: '/api/dashboard/kpi/',
     PUBLICATIONS: '/api/dashboard/publications/',
     RESEARCH: '/api/dashboard/research/',
     STUDENTS: '/api/dashboard/students/',
+    FILTERS: '/api/dashboard/filters/',
+    REPORTS: '/api/dashboard/reports/',
   },
 } as const;
 

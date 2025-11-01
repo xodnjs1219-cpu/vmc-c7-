@@ -28,6 +28,14 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
+    // Log errors for debugging
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
     const originalRequest = error.config as any;
 
     // 401 에러 및 refresh 재시도가 아닐 경우

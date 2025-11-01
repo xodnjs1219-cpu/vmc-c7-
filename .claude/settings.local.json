@@ -29,7 +29,8 @@
       "Bash(docker-compose down:*)",
       "Bash(docker-compose restart:*)",
       "Bash(where:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(python backend/manage.py shell:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

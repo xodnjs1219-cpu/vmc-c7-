@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { PieChart, Pie, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -58,13 +58,13 @@ export const DetailedReportPage = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ category, percentage }) => `${category} (${Math.round(percentage)}%)`}
+                label={({ category, percentage }: any) => `${category} (${Math.round(percentage as number)}%)`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
-                {config.data.map((entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {config.data.map((_entry: any, index: number) => (
+                  <Cell key={`cell-${index}`} fill={_entry.color} />
                 ))}
               </Pie>
               <Tooltip />
@@ -106,12 +106,12 @@ export const DetailedReportPage = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ category, percentage }) => `${category} (${percentage}%)`}
+                label={({ category, percentage }: any) => `${category} (${percentage}%)`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="amount"
               >
-                {config.data.map((entry: any, index: number) => (
+                {config.data.map((_entry: any, index: number) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={
@@ -152,39 +152,36 @@ export const DetailedReportPage = () => {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Main Chart */}
-        <Grid item xs={12}>
-          <Card
-            sx={{
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-                데이터 시각화
-              </Typography>
-              {renderChart()}
-            </CardContent>
-          </Card>
-        </Grid>
+        <Card
+          sx={{
+            borderRadius: 2,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              데이터 시각화
+            </Typography>
+            {renderChart()}
+          </CardContent>
+        </Card>
 
         {/* Statistics Cards */}
-        <Grid item xs={12}>
-          <Card
-            sx={{
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-                상세 통계
-              </Typography>
-              <Grid container spacing={2}>
-                {config.data.map((item: any, index: number) => (
-                  <Grid item xs={12} sm={6} md={3} key={index}>
+        <Card
+          sx={{
+            borderRadius: 2,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              상세 통계
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+              {config.data.map((item: any, index: number) => (
+                <Box key={index}>
                     <Box
                       sx={{
                         p: 2,
@@ -207,13 +204,12 @@ export const DetailedReportPage = () => {
                         </Typography>
                       )}
                     </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                  </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 };

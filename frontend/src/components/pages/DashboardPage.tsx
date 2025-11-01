@@ -5,6 +5,8 @@ import {
   CardContent,
   useTheme,
   Chip,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -14,24 +16,12 @@ import {
   EventNote as EventNoteIcon,
 } from '@mui/icons-material';
 import { useCurrentUser } from '@/hooks/queries/useAuth';
+import { 
+  useDashboardSummary, 
+  usePublicationsData, 
+  useStudentsData 
+} from '@/hooks/queries/useDashboard';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
-// Mock data for charts
-const performanceData = [
-  { month: '1월', value: 65 },
-  { month: '2월', value: 78 },
-  { month: '3월', value: 72 },
-  { month: '4월', value: 85 },
-  { month: '5월', value: 90 },
-  { month: '6월', value: 88 },
-];
-
-const departmentData = [
-  { name: '공학대학', students: 450, papers: 28 },
-  { name: '자연과학대학', students: 380, papers: 24 },
-  { name: '인문대학', students: 320, papers: 18 },
-  { name: '상경대학', students: 400, papers: 22 },
-];
 
 interface MetricCardProps {
   title: string;
@@ -113,40 +103,51 @@ const MetricCard: React.FC<MetricCardProps> = ({
 export const DashboardPage = () => {
   const theme = useTheme();
   const { data: currentUser } = useCurrentUser();
+  
+  // React Query hooks
+  const { data: summaryData, isLoading: isLoadingSummary, error: summaryError } = useDashboardSummary({});
+  const { data: publicationsData, isLoading: isLoadingPublications } = usePublicationsData({});
+  const { data: studentsData, isLoading: isLoadingStudents } = useStudentsData({});
 
   const metrics = [
     {
-      title: '총 실적',
-      value: '245',
-      icon: <TrendingUpIcon sx={{ fontSize: 28 }} />,
+      title: '총 학생',
+      value: isLoadingSummary ? '-' : (summaryData?.summary?.total_students || 0).toLocaleString(),
+      icon: <PeopleIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.primary.main,
-      trend: 12,
+      trend: undefined,
+    },
+    {
+      title: '총 교직원',
+      value: isLoadingSummary ? '-' : (summaryData?.summary?.total_faculty || 0).toLocaleString(),
+      icon: <TrendingUpIcon sx={{ fontSize: 28 }} />,
+      color: theme.palette.secondary.main,
+      trend: undefined,
     },
     {
       title: '게재된 논문',
-      value: '92',
+      value: isLoadingSummary ? '-' : (summaryData?.summary?.total_publications || 0).toString(),
       icon: <ArticleIcon sx={{ fontSize: 28 }} />,
-      color: theme.palette.secondary.main,
-      trend: 8,
-    },
-    {
-      title: '등록 학생',
-      value: '1,540',
-      icon: <PeopleIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.success.main,
-      trend: 5,
+      trend: undefined,
     },
     {
-      title: '예산 집행',
-      value: '$485K',
+      title: '총 예산',
+      value: isLoadingSummary ? '-' : `$${(summaryData?.summary?.total_budget || 0).toLocaleString()}`,
       icon: <AttachMoneyIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.warning.main,
-      trend: 15,
+      trend: undefined,
     },
   ];
 
   return (
     <Box>
+      {summaryError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          데이터를 불러오는 중 오류가 발생했습니다: {summaryError.message}
+        </Alert>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography
@@ -161,7 +162,7 @@ export const DashboardPage = () => {
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
           <Chip
             icon={<EventNoteIcon />}
-            label="2024년"
+            label={`${summaryData?.year || new Date().getFullYear()}년 ${summaryData?.semester || ''}`}
             variant="outlined"
             size="medium"
           />
@@ -195,7 +196,7 @@ export const DashboardPage = () => {
 
       {/* Charts Section */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {/* Performance Trend */}
+        {/* Publications Trend */}
         <Box>
           <Card
             sx={{
@@ -206,38 +207,48 @@ export const DashboardPage = () => {
           >
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                실적 추이
+                논문 발표 추이
               </Typography>
-              <ResponsiveContainer width="100%" height={320}>
-                <LineChart data={performanceData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                  <XAxis dataKey="month" style={{ fontSize: '0.875rem' }} />
-                  <YAxis style={{ fontSize: '0.875rem' }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 8,
-                      fontSize: '0.875rem',
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke={theme.palette.primary.main}
-                    strokeWidth={3}
-                    dot={{ fill: theme.palette.primary.main, r: 5 }}
-                    activeDot={{ r: 7 }}
-                    name="실적"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {isLoadingPublications ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                  <CircularProgress />
+                </Box>
+              ) : publicationsData && publicationsData.data.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={publicationsData.data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                    <XAxis dataKey="year" style={{ fontSize: '0.875rem' }} />
+                    <YAxis style={{ fontSize: '0.875rem' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 8,
+                        fontSize: '0.875rem',
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke={theme.palette.primary.main}
+                      strokeWidth={3}
+                      dot={{ fill: theme.palette.primary.main, r: 5 }}
+                      activeDot={{ r: 7 }}
+                      name="논문 수"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
+                  데이터가 없습니다
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Box>
 
-        {/* Department Stats */}
+        {/* Students by Department */}
         <Box>
           <Card
             sx={{
@@ -248,26 +259,35 @@ export const DashboardPage = () => {
           >
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                학과별 통계
+                학과별 학생 통계
               </Typography>
-              <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={departmentData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                  <XAxis dataKey="name" style={{ fontSize: '0.875rem' }} />
-                  <YAxis style={{ fontSize: '0.875rem' }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 8,
-                      fontSize: '0.875rem',
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
-                  <Bar dataKey="students" fill={theme.palette.primary.main} name="학생" />
-                  <Bar dataKey="papers" fill={theme.palette.secondary.main} name="논문" />
-                </BarChart>
-              </ResponsiveContainer>
+              {isLoadingStudents ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                  <CircularProgress />
+                </Box>
+              ) : studentsData && studentsData.data.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={studentsData.data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                    <XAxis dataKey="department" style={{ fontSize: '0.875rem' }} />
+                    <YAxis style={{ fontSize: '0.875rem' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 8,
+                        fontSize: '0.875rem',
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
+                    <Bar dataKey="count" fill={theme.palette.primary.main} name="학생 수" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
+                  데이터가 없습니다
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Box>

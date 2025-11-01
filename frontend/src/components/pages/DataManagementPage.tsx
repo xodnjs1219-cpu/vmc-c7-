@@ -13,6 +13,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   CloudUpload as CloudUploadIcon,
@@ -20,34 +22,18 @@ import {
   Error as ErrorIcon,
   FilePresent as FilePresentIcon,
 } from '@mui/icons-material';
-
-interface UploadedFile {
-  name: string;
-  size: number;
-  uploadedAt: string;
-  status: 'success' | 'pending' | 'error';
-  records: number;
-}
+import { useUploadData, useUploadLogs } from '@/hooks/queries/useUpload';
 
 export const DataManagementPage = () => {
   const theme = useTheme();
   const [isDragActive, setIsDragActive] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([
-    {
-      name: 'department_data_2024.xlsx',
-      size: 256,
-      uploadedAt: '2024-11-01',
-      status: 'success',
-      records: 245,
-    },
-    {
-      name: 'student_enrollment.xlsx',
-      size: 512,
-      uploadedAt: '2024-10-28',
-      status: 'success',
-      records: 1540,
-    },
-  ]);
+  const [page] = useState(1);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  
+  // React Query hooks
+  const { mutate: uploadFile, isPending: isUploading } = useUploadData();
+  const { data: logsData, isLoading: isLoadingLogs, error: logsError } = useUploadLogs(page, 20);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -67,25 +53,30 @@ export const DataManagementPage = () => {
 
   const handleFiles = (files: FileList) => {
     const file = files[0];
-    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-      const newFile: UploadedFile = {
-        name: file.name,
-        size: Math.round(file.size / 1024),
-        uploadedAt: new Date().toISOString().split('T')[0],
-        status: 'pending',
-        records: 0,
-      };
-      setUploadedFiles([newFile, ...uploadedFiles]);
-      // Simulate upload
-      setTimeout(() => {
-        setUploadedFiles((prev) =>
-          prev.map((f) =>
-            f.name === newFile.name
-              ? { ...f, status: 'success', records: 150 }
-              : f
-          )
-        );
-      }, 2000);
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv'))) {
+      setUploadError(null);
+      setUploadSuccess(null);
+      
+      uploadFile(
+        { file, replaceExisting: true },
+        {
+          onSuccess: (data) => {
+            console.log('Upload successful:', data);
+            setUploadSuccess(`파일이 성공적으로 업로드되었습니다: ${data.message}`);
+          },
+          onError: (error: any) => {
+            console.error('Upload failed:', error);
+            const errorMessage = error.response?.data?.details 
+              ? JSON.stringify(error.response.data.details)
+              : error.response?.data?.error 
+              || error.message 
+              || '파일 업로드에 실패했습니다';
+            setUploadError(errorMessage);
+          },
+        }
+      );
+    } else {
+      setUploadError('CSV 또는 XLSX 파일만 업로드 가능합니다.');
     }
   };
 
@@ -93,7 +84,7 @@ export const DataManagementPage = () => {
     switch (status) {
       case 'success':
         return <CheckCircleIcon sx={{ color: 'success.main' }} />;
-      case 'error':
+      case 'failed':
         return <ErrorIcon sx={{ color: 'error.main' }} />;
       default:
         return <FilePresentIcon sx={{ color: 'info.main' }} />;
@@ -104,16 +95,37 @@ export const DataManagementPage = () => {
     switch (status) {
       case 'success':
         return '완료';
-      case 'error':
-        return '오류';
+      case 'failed':
+        return '실패';
+      case 'pending':
+        return '처리중';
       default:
-        return '업로드 중';
+        return '알 수 없음';
     }
   };
 
+  const uploadedFiles = logsData?.logs || [];
+  const totalRecords = uploadedFiles.reduce((sum, log) => sum + (log.processed_records || 0), 0);
+
   return (
     <Box>
-      {/* Header */}
+      {/* Upload Success/Error Messages */}
+      {uploadSuccess && (
+        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setUploadSuccess(null)}>
+          {uploadSuccess}
+        </Alert>
+      )}
+      {uploadError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setUploadError(null)}>
+          {uploadError}
+        </Alert>
+      )}
+      {logsError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          데이터를 불러오는 중 오류가 발생했습니다: {logsError.message}
+        </Alert>
+      )}
+
       <Box sx={{ mb: 3 }}>
         <Typography
           variant="h4"
@@ -205,15 +217,17 @@ export const DataManagementPage = () => {
                 variant="contained"
                 component="label"
                 size="large"
+                startIcon={isUploading ? <CircularProgress size={20} color="inherit" /> : undefined}
+                disabled={isUploading}
                 sx={{
                   px: 3,
                   py: 1.2,
                 }}
               >
-                파일 선택
+                {isUploading ? '업로드 중...' : '파일 선택'}
                 <input
                   hidden
-                  accept=".xlsx,.xls"
+                  accept=".xlsx,.xls,.csv"
                   type="file"
                   onChange={(e) => {
                     if (e.target.files) {
@@ -228,7 +242,7 @@ export const DataManagementPage = () => {
                 color="textSecondary"
                 sx={{ mt: 2 }}
               >
-                지원 형식: .xlsx, .xls (최대 10MB)
+                지원 형식: .xlsx, .xls, .csv (최대 50MB)
               </Typography>
             </CardContent>
           </Card>
@@ -270,7 +284,7 @@ export const DataManagementPage = () => {
                         variant="h5"
                         sx={{ fontWeight: 700 }}
                       >
-                        {uploadedFiles.length}개
+                        {isLoadingLogs ? '-' : uploadedFiles.length}개
                       </Typography>
                     </Box>
                   </Box>
@@ -311,7 +325,7 @@ export const DataManagementPage = () => {
                         variant="h5"
                         sx={{ fontWeight: 700 }}
                       >
-                        {uploadedFiles.reduce((sum, f) => sum + f.records, 0).toLocaleString()}개
+                        {isLoadingLogs ? '-' : totalRecords.toLocaleString()}개
                       </Typography>
                     </Box>
                   </Box>
@@ -338,7 +352,11 @@ export const DataManagementPage = () => {
                 업로드 이력
               </Typography>
 
-              {uploadedFiles.length === 0 ? (
+              {isLoadingLogs ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : uploadedFiles.length === 0 ? (
                 <Typography color="textSecondary" sx={{ textAlign: 'center', py: 3 }}>
                   업로드된 파일이 없습니다
                 </Typography>
@@ -363,9 +381,9 @@ export const DataManagementPage = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {uploadedFiles.map((file, index) => (
+                      {uploadedFiles.map((log) => (
                         <TableRow
-                          key={index}
+                          key={log.id}
                           sx={{
                             '&:hover': {
                               bgcolor: theme.palette.action.hover,
@@ -375,28 +393,37 @@ export const DataManagementPage = () => {
                           <TableCell>
                             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
                               <FilePresentIcon sx={{ color: 'primary.main' }} />
-                              {file.name}
+                              <Box>
+                                <Typography variant="body2">{log.filename}</Typography>
+                                {log.error_message && (
+                                  <Typography variant="caption" color="error">
+                                    {log.error_message}
+                                  </Typography>
+                                )}
+                              </Box>
                             </Box>
                           </TableCell>
-                          <TableCell align="right">{file.size}KB</TableCell>
+                          <TableCell align="right">
+                            {log.file_size ? `${Math.round(log.file_size / 1024)}KB` : '-'}
+                          </TableCell>
                           <TableCell align="right">
                             <Chip
-                              label={`${file.records}개`}
+                              label={`${log.processed_records || 0}개`}
                               size="small"
                               variant="outlined"
                             />
                           </TableCell>
                           <TableCell align="center">
                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                              {getStatusIcon(file.status)}
+                              {getStatusIcon(log.status)}
                               <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                                {getStatusLabel(file.status)}
+                                {getStatusLabel(log.status)}
                               </Typography>
                             </Box>
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="caption" color="textSecondary">
-                              {file.uploadedAt}
+                              {new Date(log.uploaded_at).toLocaleDateString('ko-KR')}
                             </Typography>
                           </TableCell>
                         </TableRow>
