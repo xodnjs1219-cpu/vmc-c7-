@@ -11,7 +11,6 @@ import {
 import {
   TrendingUp as TrendingUpIcon,
   Article as ArticleIcon,
-  People as PeopleIcon,
   AttachMoney as AttachMoneyIcon,
   EventNote as EventNoteIcon,
 } from '@mui/icons-material';
@@ -110,13 +109,6 @@ export const DashboardPage = () => {
   const { data: kpiData, isLoading: isLoadingKPI } = useKPIData({});
 
   const metrics = [
-    {
-      title: '재학생 수',
-      value: isLoadingSummary ? '-' : (summaryData?.summary?.total_students || 0).toLocaleString(),
-      icon: <PeopleIcon sx={{ fontSize: 28 }} />,
-      color: theme.palette.primary.main,
-      trend: undefined,
-    },
     {
       title: '게재 논문 수',
       value: isLoadingSummary ? '-' : (summaryData?.summary?.total_publications || 0).toString(),

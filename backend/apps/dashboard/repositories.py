@@ -41,6 +41,10 @@ class DashboardRepository:
         student_count = queryset.filter(data_type='student').count()
         publication_count = queryset.filter(data_type='publication').count()
         
+        # Debug: Log publication count
+        print(f"[DEBUG] Total publications in DB: {publication_count}")
+        print(f"[DEBUG] Filters - year: {year}, semester: {semester}, college: {college}")
+        
         # Get research projects count (unique by 과제번호)
         research_data = queryset.filter(data_type='research')
         unique_projects = set()
@@ -59,6 +63,8 @@ class DashboardRepository:
                     total_research_budget += int(budget)
                 except (ValueError, TypeError):
                     pass
+        
+        print(f"[DEBUG] Research projects: {len(unique_projects)}, Budget: {total_research_budget}")
         
         return {
             'total_students': student_count,
