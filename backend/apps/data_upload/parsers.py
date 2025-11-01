@@ -40,7 +40,7 @@ class DataTypeDetector:
         'publication': ['논문ID', '게재일', '단과대학', '학과'],
         'research': ['집행ID', '과제번호', '과제명', '연구책임자'],
         'student': ['학번', '이름', '단과대학', '학과'],
-        'kpi': ['평가년도', '학기', '단과대학', '학과'],
+        'kpi': ['평가년도', '단과대학', '학과'],
     }
     
     @classmethod
@@ -311,13 +311,14 @@ class ExcelParser:
         KPI 데이터 파싱 및 정규화.
         
         Example Excel columns:
-        평가년도,학기,단과대학,학과,졸업률,전임교원수,학생수,논문게재수,연구비수주액 등
+        평가년도,단과대학,학과,졸업생 취업률 (%),전임교원 수 (명) 등
+        학기는 선택적 컬럼
         """
         parsed_records = []
         
         for idx, record in enumerate(records, start=2):
             try:
-                required_fields = ['평가년도', '학기', '단과대학', '학과']
+                required_fields = ['평가년도', '단과대학', '학과']
                 for field in required_fields:
                     if not record.get(field):
                         raise ValueError(f"'{field}' 필드가 비어있습니다")
@@ -339,10 +340,17 @@ class ExcelParser:
                         else:
                             metadata[k] = None
                 
+                # 학기는 선택적 필드
+                semester = record.get('학기')
+                if semester is not None and pd.notna(semester):
+                    semester = str(semester)
+                else:
+                    semester = None
+                
                 parsed_records.append({
                     'data_type': 'kpi',
                     'year': year,
-                    'semester': str(record['학기']),
+                    'semester': semester,
                     'college': record['단과대학'],
                     'department': record['학과'],
                     'metadata': metadata,
