@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { loginApi, logoutApi } from '@/api/endpoints/auth.api';
+import { loginApi, logoutApi, getCurrentUserApi } from '@/api/endpoints/auth.api';
 import { STORAGE_KEYS } from '@/config/constants';
 import type { LoginRequest, LoginResponse, UserInfo, LogoutRequest } from '@/types/dto/auth.dto';
 
@@ -49,16 +49,26 @@ export const useLogout = () => {
 
 /**
  * 현재 사용자 정보 조회 훅
- * localStorage에서 사용자 정보를 읽음
+ * 백엔드 API에서 현재 사용자 정보를 조회
+ * 토큰이 유효하면 사용자 정보 반환, 유효하지 않으면 null 반환
  */
 export const useCurrentUser = () => {
   return useQuery<UserInfo | null>({
     queryKey: ['currentUser'],
-    queryFn: () => {
-      const userInfo = localStorage.getItem(STORAGE_KEYS.USER_INFO);
-      return userInfo ? JSON.parse(userInfo) : null;
+    queryFn: async () => {
+      try {
+        const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+        if (!accessToken) {
+          return null;
+        }
+        return await getCurrentUserApi();
+      } catch (error) {
+        // 토큰이 유효하지 않으면 null 반환
+        return null;
+      }
     },
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5, // 5분
+    retry: false,
   });
 };
 
