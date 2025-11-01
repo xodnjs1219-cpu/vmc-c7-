@@ -111,29 +111,29 @@ export const DashboardPage = () => {
 
   const metrics = [
     {
-      title: '총 학생',
+      title: '재학생 수',
       value: isLoadingSummary ? '-' : (summaryData?.summary?.total_students || 0).toLocaleString(),
       icon: <PeopleIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.primary.main,
       trend: undefined,
     },
     {
-      title: '총 교직원',
-      value: isLoadingSummary ? '-' : (summaryData?.summary?.total_faculty || 0).toLocaleString(),
-      icon: <TrendingUpIcon sx={{ fontSize: 28 }} />,
-      color: theme.palette.secondary.main,
-      trend: undefined,
-    },
-    {
-      title: '게재된 논문',
+      title: '게재 논문 수',
       value: isLoadingSummary ? '-' : (summaryData?.summary?.total_publications || 0).toString(),
       icon: <ArticleIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.success.main,
       trend: undefined,
     },
     {
-      title: '총 예산',
-      value: isLoadingSummary ? '-' : `$${(summaryData?.summary?.total_budget || 0).toLocaleString()}`,
+      title: '연구 프로젝트',
+      value: isLoadingSummary ? '-' : (summaryData?.summary?.total_research_projects || 0).toString(),
+      icon: <TrendingUpIcon sx={{ fontSize: 28 }} />,
+      color: theme.palette.secondary.main,
+      trend: undefined,
+    },
+    {
+      title: '총 연구비 (억원)',
+      value: isLoadingSummary ? '-' : `${((summaryData?.summary?.total_research_budget || 0) / 100000000).toFixed(1)}`,
       icon: <AttachMoneyIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.warning.main,
       trend: undefined,
@@ -207,7 +207,7 @@ export const DashboardPage = () => {
           >
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                논문 발표 추이
+                연도별 논문 게재 추이
               </Typography>
               {isLoadingPublications ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
@@ -259,7 +259,7 @@ export const DashboardPage = () => {
           >
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                학과별 학생 통계
+                학과별 재학생 현황
               </Typography>
               {isLoadingStudents ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>

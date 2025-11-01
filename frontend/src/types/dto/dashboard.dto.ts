@@ -16,9 +16,9 @@ export interface ReportFilters extends DashboardFilters {
 
 export interface DashboardSummary {
   total_students: number;
-  total_faculty: number;
   total_publications: number;
-  total_budget: number;
+  total_research_projects: number;
+  total_research_budget: number; // 총 연구비 (원 단위)
 }
 
 export interface DashboardSummaryResponse {

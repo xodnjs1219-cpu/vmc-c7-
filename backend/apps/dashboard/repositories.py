@@ -41,33 +41,30 @@ class DashboardRepository:
         student_count = queryset.filter(data_type='student').count()
         publication_count = queryset.filter(data_type='publication').count()
         
-        # Get KPI data for faculty count
-        kpi_data = queryset.filter(data_type='kpi')
-        total_faculty = 0
-        for item in kpi_data:
-            faculty_count = item.metadata.get('전임교원수', 0) or item.metadata.get('tenured_faculty', 0)
-            if faculty_count:
-                try:
-                    total_faculty += int(faculty_count)
-                except (ValueError, TypeError):
-                    pass
-        
-        # Get research budget
+        # Get research projects count (unique by 과제번호)
         research_data = queryset.filter(data_type='research')
-        total_budget = 0
+        unique_projects = set()
+        total_research_budget = 0
+        
         for item in research_data:
+            # Count unique projects by 과제번호
+            project_number = item.metadata.get('과제번호')
+            if project_number:
+                unique_projects.add(project_number)
+            
+            # Sum total research budget (총연구비)
             budget = item.metadata.get('총연구비', 0)
             if budget:
                 try:
-                    total_budget += int(budget)
+                    total_research_budget += int(budget)
                 except (ValueError, TypeError):
                     pass
         
         return {
             'total_students': student_count,
-            'total_faculty': total_faculty,
             'total_publications': publication_count,
-            'total_budget': total_budget,
+            'total_research_projects': len(unique_projects),
+            'total_research_budget': total_research_budget,
         }
     
     def get_kpi_data(
