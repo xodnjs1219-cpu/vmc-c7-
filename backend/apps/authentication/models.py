@@ -39,6 +39,22 @@ class User(models.Model):
         from django.contrib.auth.hashers import check_password
         return check_password(raw_password, self.password_hash)
 
+    @property
+    def is_authenticated(self) -> bool:
+        """
+        Always return True for authenticated users.
+        This is a way to tell if the user has been authenticated in templates.
+        """
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:
+        """
+        Always return False. This is a way of differentiating User objects
+        from AnonymousUser objects.
+        """
+        return False
+
 
 class TokenBlacklist(models.Model):
     """JWT Refresh Token blacklist model."""
