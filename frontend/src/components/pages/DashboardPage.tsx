@@ -16,14 +16,12 @@ import {
   EventNote as EventNoteIcon,
 } from '@mui/icons-material';
 import { useCurrentUser } from '@/hooks/queries/useAuth';
-import { 
-  useDashboardSummary, 
-  usePublicationsData, 
-  useStudentsData,
+import {
+  useDashboardSummary,
   useResearchData,
-  useKPIData
+  useKPIData,
 } from '@/hooks/queries/useDashboard';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface MetricCardProps {
   title: string;
@@ -108,8 +106,6 @@ export const DashboardPage = () => {
   
   // React Query hooks
   const { data: summaryData, isLoading: isLoadingSummary, error: summaryError } = useDashboardSummary({});
-  const { data: publicationsData, isLoading: isLoadingPublications } = usePublicationsData({});
-  const { data: studentsData, isLoading: isLoadingStudents } = useStudentsData({});
   const { data: researchData, isLoading: isLoadingResearch } = useResearchData({});
   const { data: kpiData, isLoading: isLoadingKPI } = useKPIData({});
 
@@ -200,100 +196,8 @@ export const DashboardPage = () => {
 
       {/* Charts Section */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {/* Publications Trend */}
-        <Box>
-          <Card
-            sx={{
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
-              height: '100%',
-            }}
-          >
-            <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                연도별 논문 게재 추이
-              </Typography>
-              {isLoadingPublications ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-                  <CircularProgress />
-                </Box>
-              ) : publicationsData && publicationsData.data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={320}>
-                  <LineChart data={publicationsData.data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                    <XAxis dataKey="year" style={{ fontSize: '0.875rem' }} />
-                    <YAxis style={{ fontSize: '0.875rem' }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: 8,
-                        fontSize: '0.875rem',
-                      }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
-                    <Line
-                      type="monotone"
-                      dataKey="count"
-                      stroke={theme.palette.primary.main}
-                      strokeWidth={3}
-                      dot={{ fill: theme.palette.primary.main, r: 5 }}
-                      activeDot={{ r: 7 }}
-                      name="논문 수"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
-                  데이터가 없습니다
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
-
         {/* 2x2 Grid Charts */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
-          {/* Students by Department - Bar Chart */}
-          <Card
-            sx={{
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                학과별 재학생 현황
-              </Typography>
-              {isLoadingStudents ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-                  <CircularProgress />
-                </Box>
-              ) : studentsData && studentsData.data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={studentsData.data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                    <XAxis dataKey="department" style={{ fontSize: '0.75rem' }} />
-                    <YAxis style={{ fontSize: '0.75rem' }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: 8,
-                        fontSize: '0.875rem',
-                      }}
-                    />
-                    <Bar dataKey="count" fill={theme.palette.primary.main} name="학생 수" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
-                  데이터가 없습니다
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Research Budget by Department - Bar Chart */}
           <Card
             sx={{
