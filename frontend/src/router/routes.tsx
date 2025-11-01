@@ -11,6 +11,10 @@ const NotFoundPage = () => <div>Page Not Found</div>;
 
 export const routes: RouteObject[] = [
   {
+    path: '/',
+    element: <LoginPage />,
+  },
+  {
     path: '/login',
     element: <LoginPage />,
   },

@@ -25,7 +25,7 @@ class User(models.Model):
 
     class Meta:
         db_table = 'users'
-        managed = False
+        managed = True
 
     def __str__(self):
         return f"{self.username} ({self.full_name})"
@@ -53,7 +53,7 @@ class TokenBlacklist(models.Model):
 
     class Meta:
         db_table = 'token_blacklist'
-        managed = False
+        managed = True
 
     def __str__(self):
         return f"Blacklisted token for user {self.user_id}"

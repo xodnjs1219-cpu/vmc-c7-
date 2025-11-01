@@ -15,24 +15,36 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend-network
 
   backend:
     build: ./backend
-    command: ["sh", "-c", "python manage.py migrate && python manage.py test"]
+    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
     volumes:
       - ./backend:/app
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.development
-      - DATABASE_URL=postgres://vmcuser:vmcpass@db:5432/vmc
+      - DEBUG=True
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=vmc
+      - DB_USER=vmcuser
+      - DB_PASSWORD=vmcpass
+      - DB_HOST=db
+      - DB_PORT=5432
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
+      - ALLOWED_HOSTS=localhost,127.0.0.1,db,backend
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8000:8000"
+    networks:
+      - backend-network
 
   frontend:
     build: ./frontend
-    command: ["npm", "run", "test"]
+    command: ["npm", "run", "dev"]
     volumes:
       - ./frontend:/app
     depends_on:
@@ -42,3 +54,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  backend-network:
+    driver: bridge

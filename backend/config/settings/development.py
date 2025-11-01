@@ -16,10 +16,11 @@ CORS_ALLOWED_ORIGINS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'postgres'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'NAME': os.environ.get('DB_NAME', 'vmc'),
+        'USER': os.environ.get('DB_USER', 'vmcuser'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'vmcpass'),
+    # 도커에서 환경변수 미설정 시 db, 로컬은 반드시 환경변수로 localhost 지정
+    'HOST': os.environ.get('DB_HOST', 'db'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }

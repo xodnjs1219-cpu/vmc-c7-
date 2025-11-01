@@ -19,7 +19,14 @@
       "Bash(for:*)",
       "Bash(do echo \"=== UC-$i ===\")",
       "Bash(head:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(python manage.py:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose exec:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose down:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
