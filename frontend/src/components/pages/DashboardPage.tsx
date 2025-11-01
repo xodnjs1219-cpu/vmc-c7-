@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -21,6 +22,7 @@ import {
   useKPIData,
 } from '@/hooks/queries/useDashboard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { DetailModal } from '@/components/features/Dashboard/DetailModal';
 
 interface MetricCardProps {
   title: string;
@@ -102,6 +104,19 @@ const MetricCard: React.FC<MetricCardProps> = ({
 export const DashboardPage = () => {
   const theme = useTheme();
   const { data: currentUser } = useCurrentUser();
+  
+  // Modal state
+  const [detailModal, setDetailModal] = useState<{
+    open: boolean;
+    title: string;
+    data: any[];
+    columns: { key: string; label: string; format?: (value: any, row: any) => string }[];
+  }>({
+    open: false,
+    title: '',
+    data: [],
+    columns: [],
+  });
   
   // React Query hooks
   const { data: summaryData, isLoading: isLoadingSummary, error: summaryError } = useDashboardSummary({});
@@ -229,6 +244,31 @@ export const DashboardPage = () => {
                       }))
                     }
                     margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    onClick={(data: any) => {
+                      if (data && data.activePayload && data.activePayload[0]) {
+                        const clickedDept = data.activePayload[0].payload.department;
+                        const deptResearch = researchData.data.filter(
+                          (item: any) => (item.소속학과 || item.department || '기타') === clickedDept
+                        );
+                        setDetailModal({
+                          open: true,
+                          title: `${clickedDept} - 연구 프로젝트`,
+                          data: deptResearch,
+                          columns: [
+                            { key: '과제번호', label: '과제번호' },
+                            { key: '과제명', label: '과제명' },
+                            { key: '연구책임자', label: '연구책임자' },
+                            { 
+                              key: '총연구비', 
+                              label: '총연구비', 
+                              format: (val) => val ? `${(val / 100000000).toFixed(1)}억원` : '-'
+                            },
+                            { key: '연구기간_시작', label: '시작일' },
+                            { key: '연구기간_종료', label: '종료일' },
+                          ],
+                        });
+                      }
+                    }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                     <XAxis dataKey="department" style={{ fontSize: '0.75rem' }} />
@@ -242,7 +282,12 @@ export const DashboardPage = () => {
                       }}
                       formatter={(value: number) => [`${value}억원`, '총 연구비']}
                     />
-                    <Bar dataKey="budget" fill={theme.palette.warning.main} name="연구비 (억원)" />
+                    <Bar 
+                      dataKey="budget" 
+                      fill={theme.palette.warning.main} 
+                      name="연구비 (억원)"
+                      cursor="pointer"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -289,6 +334,30 @@ export const DashboardPage = () => {
                       }))
                     }
                     margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    onClick={(data: any) => {
+                      if (data && data.activePayload && data.activePayload[0]) {
+                        const clickedCollege = data.activePayload[0].payload.college;
+                        const collegeKPI = kpiData.data.filter(
+                          (item: any) => (item.college || '기타') === clickedCollege
+                        );
+                        setDetailModal({
+                          open: true,
+                          title: `${clickedCollege} - 학과별 KPI`,
+                          data: collegeKPI,
+                          columns: [
+                            { key: 'department', label: '학과' },
+                            { key: 'year', label: '평가년도' },
+                            { 
+                              key: '졸업생 취업률 (%)', 
+                              label: '졸업생 취업률', 
+                              format: (val) => val ? `${val}%` : '-'
+                            },
+                            { key: '전임교원 수 (명)', label: '전임교원' },
+                            { key: '초빙교원 수 (명)', label: '초빙교원' },
+                          ],
+                        });
+                      }
+                    }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                     <XAxis dataKey="college" style={{ fontSize: '0.75rem' }} />
@@ -302,7 +371,12 @@ export const DashboardPage = () => {
                       }}
                       formatter={(value: number) => [`${value}%`, '평균 취업률']}
                     />
-                    <Bar dataKey="rate" fill={theme.palette.success.main} name="취업률 (%)" />
+                    <Bar 
+                      dataKey="rate" 
+                      fill={theme.palette.success.main} 
+                      name="취업률 (%)"
+                      cursor="pointer"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -347,6 +421,34 @@ export const DashboardPage = () => {
                       )
                     }
                     margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    onClick={(data: any) => {
+                      if (data && data.activePayload && data.activePayload[0]) {
+                        const clickedCollege = data.activePayload[0].payload.college;
+                        const collegeFaculty = kpiData.data.filter(
+                          (item: any) => (item.college || '기타') === clickedCollege
+                        );
+                        setDetailModal({
+                          open: true,
+                          title: `${clickedCollege} - 학과별 교원 현황`,
+                          data: collegeFaculty,
+                          columns: [
+                            { key: 'department', label: '학과' },
+                            { key: 'year', label: '평가년도' },
+                            { key: '전임교원 수 (명)', label: '전임교원' },
+                            { key: '초빙교원 수 (명)', label: '초빙교원' },
+                            { 
+                              key: 'total', 
+                              label: '총 교원', 
+                              format: (_val, row) => {
+                                const tenured = Number(row['전임교원 수 (명)']) || 0;
+                                const visiting = Number(row['초빙교원 수 (명)']) || 0;
+                                return `${tenured + visiting}명`;
+                              }
+                            },
+                          ],
+                        });
+                      }
+                    }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                     <XAxis dataKey="college" style={{ fontSize: '0.75rem' }} />
@@ -360,8 +462,20 @@ export const DashboardPage = () => {
                       }}
                     />
                     <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
-                    <Bar dataKey="tenured" fill={theme.palette.secondary.main} name="전임교원" stackId="a" />
-                    <Bar dataKey="visiting" fill={theme.palette.info.main} name="초빙교원" stackId="a" />
+                    <Bar 
+                      dataKey="tenured" 
+                      fill={theme.palette.secondary.main} 
+                      name="전임교원" 
+                      stackId="a"
+                      cursor="pointer"
+                    />
+                    <Bar 
+                      dataKey="visiting" 
+                      fill={theme.palette.info.main} 
+                      name="초빙교원" 
+                      stackId="a"
+                      cursor="pointer"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -373,6 +487,15 @@ export const DashboardPage = () => {
           </Card>
         </Box>
       </Box>
+
+      {/* Detail Modal */}
+      <DetailModal
+        open={detailModal.open}
+        onClose={() => setDetailModal({ ...detailModal, open: false })}
+        title={detailModal.title}
+        data={detailModal.data}
+        columns={detailModal.columns}
+      />
     </Box>
   );
 };
