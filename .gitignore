@@ -18,8 +18,9 @@
 /AGENTS.md.bak
 /CLAUDE.md
 /CLAUDE.md.bak
-.env.local
+*/.env.*
+*/.env
+backend/.env
 # END Ruler Generated Files
-
- 
- 
+.env.local
+backend/.env
