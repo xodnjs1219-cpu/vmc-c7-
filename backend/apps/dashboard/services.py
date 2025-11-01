@@ -22,17 +22,13 @@ class DashboardService:
         대시보드 요약 정보 조회.
         
         Args:
-            year: 연도 필터
+            year: 연도 필터 (None이면 전체 연도)
             semester: 학기 필터
             college: 단과대학 필터
             
         Returns:
             Dict: 요약 정보
         """
-        # Default to current year if not specified
-        if not year:
-            year = datetime.now().year
-        
         statistics = self.repository.get_summary_statistics(
             year=year,
             semester=semester,
@@ -40,7 +36,7 @@ class DashboardService:
         )
         
         return {
-            'year': year,
+            'year': year or 'all',
             'semester': semester or 'all',
             'college': college or 'all',
             'summary': statistics,

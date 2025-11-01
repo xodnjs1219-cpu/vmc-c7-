@@ -22,7 +22,7 @@ export interface DashboardSummary {
 }
 
 export interface DashboardSummaryResponse {
-  year: number;
+  year: number | string; // 'all' 또는 연도
   semester: string;
   college: string;
   summary: DashboardSummary;

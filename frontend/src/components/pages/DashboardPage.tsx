@@ -154,7 +154,11 @@ export const DashboardPage = () => {
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
           <Chip
             icon={<EventNoteIcon />}
-            label={`${summaryData?.year || new Date().getFullYear()}년 ${summaryData?.semester || ''}`}
+            label={
+              summaryData?.year === 'all' || !summaryData?.year
+                ? '전체 데이터'
+                : `${summaryData.year}년 ${summaryData.semester !== 'all' ? summaryData.semester : ''}`
+            }
             variant="outlined"
             size="medium"
           />
