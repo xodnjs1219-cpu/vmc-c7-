@@ -252,13 +252,13 @@ export const DashboardPage = () => {
           </Card>
         </Box>
 
-        {/* Students by Department */}
-        <Box>
+        {/* 2x2 Grid Charts */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
+          {/* Students by Department - Bar Chart */}
           <Card
             sx={{
               borderRadius: 2,
               border: `1px solid ${theme.palette.divider}`,
-              height: '100%',
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
@@ -270,11 +270,11 @@ export const DashboardPage = () => {
                   <CircularProgress />
                 </Box>
               ) : studentsData && studentsData.data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={studentsData.data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={studentsData.data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                    <XAxis dataKey="department" style={{ fontSize: '0.875rem' }} />
-                    <YAxis style={{ fontSize: '0.875rem' }} />
+                    <XAxis dataKey="department" style={{ fontSize: '0.75rem' }} />
+                    <YAxis style={{ fontSize: '0.75rem' }} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: theme.palette.background.paper,
@@ -283,7 +283,6 @@ export const DashboardPage = () => {
                         fontSize: '0.875rem',
                       }}
                     />
-                    <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
                     <Bar dataKey="count" fill={theme.palette.primary.main} name="학생 수" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -294,10 +293,8 @@ export const DashboardPage = () => {
               )}
             </CardContent>
           </Card>
-        </Box>
 
-        {/* Research Budget by Department */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
+          {/* Research Budget by Department - Bar Chart */}
           <Card
             sx={{
               borderRadius: 2,
@@ -306,17 +303,16 @@ export const DashboardPage = () => {
           >
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                학과별 연구비 현황
+                학과별 총 연구비
               </Typography>
               {isLoadingResearch ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                   <CircularProgress />
                 </Box>
               ) : researchData && researchData.data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={280}>
                   <BarChart 
                     data={
-                      // 학과별 연구비 합계 계산
                       Object.values(
                         researchData.data.reduce((acc: any, item: any) => {
                           const dept = item.소속학과 || item.department || '기타';
@@ -324,7 +320,7 @@ export const DashboardPage = () => {
                           if (!acc[dept]) {
                             acc[dept] = { department: dept, budget: 0 };
                           }
-                          acc[dept].budget += budget / 100000000; // 억원 단위
+                          acc[dept].budget += budget / 100000000;
                           return acc;
                         }, {})
                       ).map((item: any) => ({
@@ -332,7 +328,7 @@ export const DashboardPage = () => {
                         budget: Number(item.budget.toFixed(1))
                       }))
                     }
-                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                     <XAxis dataKey="department" style={{ fontSize: '0.75rem' }} />
@@ -344,7 +340,7 @@ export const DashboardPage = () => {
                         borderRadius: 8,
                         fontSize: '0.875rem',
                       }}
-                      formatter={(value: number) => [`${value}억원`, '연구비']}
+                      formatter={(value: number) => [`${value}억원`, '총 연구비']}
                     />
                     <Bar dataKey="budget" fill={theme.palette.warning.main} name="연구비 (억원)" />
                   </BarChart>
@@ -357,7 +353,7 @@ export const DashboardPage = () => {
             </CardContent>
           </Card>
 
-          {/* KPI by College */}
+          {/* College Employment Rate - Bar Chart */}
           <Card
             sx={{
               borderRadius: 2,
@@ -373,10 +369,9 @@ export const DashboardPage = () => {
                   <CircularProgress />
                 </Box>
               ) : kpiData && kpiData.data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={280}>
                   <BarChart 
                     data={
-                      // 단과대학별 평균 취업률 계산
                       Object.values(
                         kpiData.data.reduce((acc: any, item: any) => {
                           const college = item.college || '기타';
@@ -393,7 +388,7 @@ export const DashboardPage = () => {
                         rate: Number((item.total / item.count).toFixed(1))
                       }))
                     }
-                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                     <XAxis dataKey="college" style={{ fontSize: '0.75rem' }} />
@@ -408,6 +403,65 @@ export const DashboardPage = () => {
                       formatter={(value: number) => [`${value}%`, '평균 취업률']}
                     />
                     <Bar dataKey="rate" fill={theme.palette.success.main} name="취업률 (%)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
+                  데이터가 없습니다
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Faculty Count by College - Bar Chart */}
+          <Card
+            sx={{
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                단과대학별 교원 현황
+              </Typography>
+              {isLoadingKPI ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                  <CircularProgress />
+                </Box>
+              ) : kpiData && kpiData.data.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart 
+                    data={
+                      Object.values(
+                        kpiData.data.reduce((acc: any, item: any) => {
+                          const college = item.college || '기타';
+                          const tenured = Number(item['전임교원 수 (명)']) || 0;
+                          const visiting = Number(item['초빙교원 수 (명)']) || 0;
+                          if (!acc[college]) {
+                            acc[college] = { college, tenured: 0, visiting: 0 };
+                          }
+                          acc[college].tenured += tenured;
+                          acc[college].visiting += visiting;
+                          return acc;
+                        }, {})
+                      )
+                    }
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                    <XAxis dataKey="college" style={{ fontSize: '0.75rem' }} />
+                    <YAxis style={{ fontSize: '0.75rem' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 8,
+                        fontSize: '0.875rem',
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
+                    <Bar dataKey="tenured" fill={theme.palette.secondary.main} name="전임교원" stackId="a" />
+                    <Bar dataKey="visiting" fill={theme.palette.info.main} name="초빙교원" stackId="a" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
