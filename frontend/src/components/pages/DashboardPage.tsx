@@ -291,47 +291,6 @@ export const DashboardPage = () => {
             </CardContent>
           </Card>
         </Box>
-
-        {/* Activity Feed */}
-        <Box>
-          <Card
-            sx={{
-              borderRadius: 2,
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                최근 활동
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {[
-                  { title: '새로운 논문 게재', time: '2시간 전' },
-                  { title: '학생 등록 완료', time: '4시간 전' },
-                  { title: '예산 보고서 제출', time: '1일 전' },
-                  { title: '시스템 업데이트', time: '3일 전' },
-                ].map((activity, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      pb: 1.5,
-                      borderBottom:
-                        index !== 3 ? `1px solid ${theme.palette.divider}` : 'none',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Typography variant="body1">{activity.title}</Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {activity.time}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
       </Box>
     </Box>
   );
