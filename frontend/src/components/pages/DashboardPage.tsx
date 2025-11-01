@@ -20,6 +20,7 @@ import {
   useDashboardSummary,
   useResearchData,
   useKPIData,
+  usePublicationsData,
 } from '@/hooks/queries/useDashboard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DetailModal } from '@/components/features/Dashboard/DetailModal';
@@ -30,6 +31,7 @@ interface MetricCardProps {
   icon: React.ReactNode;
   color: string;
   trend?: number;
+  onClick?: () => void;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -38,18 +40,21 @@ const MetricCard: React.FC<MetricCardProps> = ({
   icon,
   color,
   trend,
+  onClick,
 }) => {
   const theme = useTheme();
 
   return (
     <Card
+      onClick={onClick}
       sx={{
         borderRadius: 2,
         border: `1px solid ${theme.palette.divider}`,
         transition: 'all 0.3s ease',
+        cursor: onClick ? 'pointer' : 'default',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: `0 8px 16px ${color}15`,
+          transform: onClick ? 'translateY(-2px)' : 'none',
+          boxShadow: onClick ? `0 8px 16px ${color}15` : 'none',
         },
         height: '100%',
       }}
@@ -122,6 +127,7 @@ export const DashboardPage = () => {
   const { data: summaryData, isLoading: isLoadingSummary, error: summaryError } = useDashboardSummary({});
   const { data: researchData, isLoading: isLoadingResearch } = useResearchData({});
   const { data: kpiData, isLoading: isLoadingKPI } = useKPIData({});
+  const { data: publicationsData, isLoading: isLoadingPublications } = usePublicationsData({});
 
   const metrics = [
     {
@@ -130,6 +136,28 @@ export const DashboardPage = () => {
       icon: <ArticleIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.success.main,
       trend: undefined,
+      onClick: () => {
+        if (isLoadingPublications) return;
+        if (publicationsData && publicationsData.data.length > 0) {
+          setDetailModal({
+            open: true,
+            title: '전체 게재 논문 목록',
+            data: publicationsData.data,
+            columns: [
+              { key: '논문ID', label: 'ID' },
+              { key: '게재일', label: '게재일' },
+              { key: '학과', label: '학과' },
+              { key: '논문제목', label: '논문제목' },
+              { key: '주저자', label: '주저자' },
+              { key: '참여저자', label: '참여저자' },
+              { key: '학술지명', label: '학술지명' },
+              { key: '저널등급', label: '등급' },
+              { key: 'Impact Factor', label: 'IF' },
+              { key: '과제연계여부', label: '과제연계' },
+            ],
+          });
+        }
+      },
     },
     {
       title: '연구 프로젝트',
@@ -137,6 +165,33 @@ export const DashboardPage = () => {
       icon: <TrendingUpIcon sx={{ fontSize: 28 }} />,
       color: theme.palette.secondary.main,
       trend: undefined,
+      onClick: () => {
+        if (researchData && researchData.data.length > 0) {
+          // Get unique projects by 과제번호
+          const uniqueProjects = Array.from(
+            new Map(
+              researchData.data.map((item: any) => [item.과제번호, item])
+            ).values()
+          );
+          setDetailModal({
+            open: true,
+            title: '전체 연구 프로젝트 목록',
+            data: uniqueProjects,
+            columns: [
+              { key: '과제번호', label: '과제번호' },
+              { key: '과제명', label: '과제명' },
+              { key: '연구책임자', label: '연구책임자' },
+              { key: '소속학과', label: '학과' },
+              { key: '지원기관', label: '지원기관' },
+              { 
+                key: '총연구비', 
+                label: '총연구비', 
+                format: (val) => val ? `${(val / 100000000).toFixed(1)}억원` : '-'
+              },
+            ],
+          });
+        }
+      },
     },
     {
       title: '총 연구비 (억원)',
@@ -258,13 +313,21 @@ export const DashboardPage = () => {
                             { key: '과제번호', label: '과제번호' },
                             { key: '과제명', label: '과제명' },
                             { key: '연구책임자', label: '연구책임자' },
+                            { key: '지원기관', label: '지원기관' },
                             { 
                               key: '총연구비', 
                               label: '총연구비', 
                               format: (val) => val ? `${(val / 100000000).toFixed(1)}억원` : '-'
                             },
-                            { key: '연구기간_시작', label: '시작일' },
-                            { key: '연구기간_종료', label: '종료일' },
+                            { key: '집행일자', label: '집행일자' },
+                            { key: '집행항목', label: '집행항목' },
+                            { 
+                              key: '집행금액', 
+                              label: '집행금액', 
+                              format: (val) => val ? `${(val / 100000000).toFixed(2)}억원` : '-'
+                            },
+                            { key: '상태', label: '상태' },
+                            { key: '비고', label: '비고' },
                           ],
                         });
                       }
@@ -345,15 +408,21 @@ export const DashboardPage = () => {
                           title: `${clickedCollege} - 학과별 KPI`,
                           data: collegeKPI,
                           columns: [
-                            { key: 'department', label: '학과' },
                             { key: 'year', label: '평가년도' },
+                            { key: 'department', label: '학과' },
                             { 
                               key: '졸업생 취업률 (%)', 
-                              label: '졸업생 취업률', 
+                              label: '취업률', 
                               format: (val) => val ? `${val}%` : '-'
                             },
                             { key: '전임교원 수 (명)', label: '전임교원' },
                             { key: '초빙교원 수 (명)', label: '초빙교원' },
+                            { 
+                              key: '연간 기술이전 수입액 (억원)', 
+                              label: '기술이전 수입', 
+                              format: (val) => val ? `${val}억원` : '-'
+                            },
+                            { key: '국제학술대회 개최 횟수', label: '국제학회' },
                           ],
                         });
                       }
@@ -429,11 +498,16 @@ export const DashboardPage = () => {
                         );
                         setDetailModal({
                           open: true,
-                          title: `${clickedCollege} - 학과별 교원 현황`,
+                          title: `${clickedCollege} - 학과별 상세 현황`,
                           data: collegeFaculty,
                           columns: [
-                            { key: 'department', label: '학과' },
                             { key: 'year', label: '평가년도' },
+                            { key: 'department', label: '학과' },
+                            { 
+                              key: '졸업생 취업률 (%)', 
+                              label: '취업률', 
+                              format: (val) => val ? `${val}%` : '-'
+                            },
                             { key: '전임교원 수 (명)', label: '전임교원' },
                             { key: '초빙교원 수 (명)', label: '초빙교원' },
                             { 
@@ -445,6 +519,12 @@ export const DashboardPage = () => {
                                 return `${tenured + visiting}명`;
                               }
                             },
+                            { 
+                              key: '연간 기술이전 수입액 (억원)', 
+                              label: '기술이전', 
+                              format: (val) => val ? `${val}억원` : '-'
+                            },
+                            { key: '국제학술대회 개최 횟수', label: '국제학회' },
                           ],
                         });
                       }
