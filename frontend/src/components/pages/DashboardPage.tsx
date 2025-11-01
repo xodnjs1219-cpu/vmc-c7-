@@ -19,7 +19,9 @@ import { useCurrentUser } from '@/hooks/queries/useAuth';
 import { 
   useDashboardSummary, 
   usePublicationsData, 
-  useStudentsData 
+  useStudentsData,
+  useResearchData,
+  useKPIData
 } from '@/hooks/queries/useDashboard';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -108,6 +110,8 @@ export const DashboardPage = () => {
   const { data: summaryData, isLoading: isLoadingSummary, error: summaryError } = useDashboardSummary({});
   const { data: publicationsData, isLoading: isLoadingPublications } = usePublicationsData({});
   const { data: studentsData, isLoading: isLoadingStudents } = useStudentsData({});
+  const { data: researchData, isLoading: isLoadingResearch } = useResearchData({});
+  const { data: kpiData, isLoading: isLoadingKPI } = useKPIData({});
 
   const metrics = [
     {
@@ -281,6 +285,129 @@ export const DashboardPage = () => {
                     />
                     <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
                     <Bar dataKey="count" fill={theme.palette.primary.main} name="학생 수" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
+                  데이터가 없습니다
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Research Budget by Department */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
+          <Card
+            sx={{
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                학과별 연구비 현황
+              </Typography>
+              {isLoadingResearch ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                  <CircularProgress />
+                </Box>
+              ) : researchData && researchData.data.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart 
+                    data={
+                      // 학과별 연구비 합계 계산
+                      Object.values(
+                        researchData.data.reduce((acc: any, item: any) => {
+                          const dept = item.소속학과 || item.department || '기타';
+                          const budget = item.총연구비 || 0;
+                          if (!acc[dept]) {
+                            acc[dept] = { department: dept, budget: 0 };
+                          }
+                          acc[dept].budget += budget / 100000000; // 억원 단위
+                          return acc;
+                        }, {})
+                      ).map((item: any) => ({
+                        ...item,
+                        budget: Number(item.budget.toFixed(1))
+                      }))
+                    }
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                    <XAxis dataKey="department" style={{ fontSize: '0.75rem' }} />
+                    <YAxis style={{ fontSize: '0.75rem' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 8,
+                        fontSize: '0.875rem',
+                      }}
+                      formatter={(value: number) => [`${value}억원`, '연구비']}
+                    />
+                    <Bar dataKey="budget" fill={theme.palette.warning.main} name="연구비 (억원)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography color="textSecondary" sx={{ textAlign: 'center', py: 10 }}>
+                  데이터가 없습니다
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* KPI by College */}
+          <Card
+            sx={{
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                단과대학별 평균 취업률
+              </Typography>
+              {isLoadingKPI ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                  <CircularProgress />
+                </Box>
+              ) : kpiData && kpiData.data.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart 
+                    data={
+                      // 단과대학별 평균 취업률 계산
+                      Object.values(
+                        kpiData.data.reduce((acc: any, item: any) => {
+                          const college = item.college || '기타';
+                          const rate = item['졸업생 취업률 (%)'] || 0;
+                          if (!acc[college]) {
+                            acc[college] = { college, total: 0, count: 0 };
+                          }
+                          acc[college].total += rate;
+                          acc[college].count += 1;
+                          return acc;
+                        }, {})
+                      ).map((item: any) => ({
+                        college: item.college,
+                        rate: Number((item.total / item.count).toFixed(1))
+                      }))
+                    }
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                    <XAxis dataKey="college" style={{ fontSize: '0.75rem' }} />
+                    <YAxis style={{ fontSize: '0.75rem' }} domain={[0, 100]} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 8,
+                        fontSize: '0.875rem',
+                      }}
+                      formatter={(value: number) => [`${value}%`, '평균 취업률']}
+                    />
+                    <Bar dataKey="rate" fill={theme.palette.success.main} name="취업률 (%)" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
