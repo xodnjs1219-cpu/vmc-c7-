@@ -15,14 +15,21 @@ import {
   TableRow,
   CircularProgress,
   Alert,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   CloudUpload as CloudUploadIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
   FilePresent as FilePresentIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { useUploadData, useUploadLogs } from '@/hooks/queries/useUpload';
+import { useUploadData, useUploadLogs, useDeleteUpload } from '@/hooks/queries/useUpload';
 
 export const DataManagementPage = () => {
   const theme = useTheme();
@@ -30,10 +37,13 @@ export const DataManagementPage = () => {
   const [page] = useState(1);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   
   // React Query hooks
   const { mutate: uploadFile, isPending: isUploading } = useUploadData();
   const { data: logsData, isLoading: isLoadingLogs, error: logsError } = useUploadLogs(page, 20);
+  const { mutate: deleteUpload, isPending: isDeleting } = useDeleteUpload();
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -89,6 +99,24 @@ export const DataManagementPage = () => {
       default:
         return <FilePresentIcon sx={{ color: 'info.main' }} />;
     }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedLogId === null) return;
+    
+    deleteUpload(selectedLogId, {
+      onSuccess: (data) => {
+        setUploadSuccess(`${data.deleted_records}개의 데이터가 성공적으로 삭제되었습니다.`);
+        setDeleteDialogOpen(false);
+        setSelectedLogId(null);
+      },
+      onError: (error: any) => {
+        const errorMessage = error.response?.data?.error || error.message || '삭제에 실패했습니다';
+        setUploadError(errorMessage);
+        setDeleteDialogOpen(false);
+        setSelectedLogId(null);
+      },
+    });
   };
 
   const getStatusLabel = (status: string) => {
@@ -378,6 +406,9 @@ export const DataManagementPage = () => {
                         <TableCell align="right" sx={{ fontWeight: 700 }}>
                           날짜
                         </TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 700 }}>
+                          작업
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -426,6 +457,20 @@ export const DataManagementPage = () => {
                               {new Date(log.uploaded_at).toLocaleDateString('ko-KR')}
                             </Typography>
                           </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                setSelectedLogId(log.id);
+                                setDeleteDialogOpen(true);
+                              }}
+                              disabled={isDeleting}
+                              title="삭제"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -436,6 +481,36 @@ export const DataManagementPage = () => {
           </Card>
         </Box>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>데이터 삭제 확인</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            이 업로드 데이터를 삭제하시겠습니까?
+            <br />
+            <strong>삭제된 데이터는 복구할 수 없습니다.</strong>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
+            취소
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm} 
+            color="error" 
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? '삭제 중...' : '삭제'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

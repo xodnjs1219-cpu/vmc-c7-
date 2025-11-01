@@ -231,3 +231,42 @@ class DataUploadRepository:
             queryset = queryset.filter(department=department)
         
         return queryset.count()
+    
+    def get_upload_log_by_id(self, log_id: int) -> Optional[DataUploadLog]:
+        """
+        Get upload log by ID.
+        
+        Args:
+            log_id: Upload log ID
+            
+        Returns:
+            DataUploadLog or None
+        """
+        try:
+            return DataUploadLog.objects.get(id=log_id)
+        except DataUploadLog.DoesNotExist:
+            return None
+    
+    @transaction.atomic
+    def delete_uploaded_data_by_log(self, log_id: int) -> int:
+        """
+        Delete all uploaded data associated with a log ID.
+        
+        Args:
+            log_id: Upload log ID
+            
+        Returns:
+            int: Number of deleted records
+        """
+        deleted, _ = UploadedData.objects.filter(upload_log_id=log_id).delete()
+        return deleted
+    
+    @transaction.atomic
+    def delete_upload_log(self, log_id: int) -> None:
+        """
+        Delete upload log.
+        
+        Args:
+            log_id: Upload log ID
+        """
+        DataUploadLog.objects.filter(id=log_id).delete()

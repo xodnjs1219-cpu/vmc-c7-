@@ -6,6 +6,7 @@ import {
   uploadDataFile,
   getUploadLogs,
   getDataStatistics,
+  deleteUploadData,
 } from '@/api/endpoints/upload.api';
 import type { UploadFileResponse, UploadLogsResponse, DataStatistics } from '@/types/dto/upload.dto';
 
@@ -52,5 +53,22 @@ export const useDataStatistics = () => {
     queryKey: uploadKeys.statistics(),
     queryFn: getDataStatistics,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+/**
+ * Hook for deleting uploaded data
+ */
+export const useDeleteUpload = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string; deleted_records: number }, Error, number>({
+    mutationFn: (logId: number) => deleteUploadData(logId),
+    onSuccess: () => {
+      // Invalidate upload logs and statistics
+      queryClient.invalidateQueries({ queryKey: uploadKeys.all });
+      // Also invalidate dashboard data
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
   });
 };

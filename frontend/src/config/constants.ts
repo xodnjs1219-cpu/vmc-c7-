@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
     UPLOAD: '/api/data-upload/upload/',
     LOGS: '/api/data-upload/logs/',
     STATISTICS: '/api/data-upload/statistics/',
+    DELETE: '/api/data-upload/delete/',
   },
   DASHBOARD: {
     SUMMARY: '/api/dashboard/summary/',

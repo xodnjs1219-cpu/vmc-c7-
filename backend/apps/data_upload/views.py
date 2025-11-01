@@ -134,3 +134,35 @@ class DataStatisticsView(APIView):
         statistics = service.get_data_statistics()
         
         return Response(statistics, status=status.HTTP_200_OK)
+
+
+class DataDeleteView(APIView):
+    """
+    DELETE /api/data-upload/delete/<log_id>/
+    
+    업로드 데이터 삭제 API (관리자 전용)
+    """
+    
+    permission_classes = [IsAdminUser]
+    
+    def delete(self, request, log_id):
+        """Delete uploaded data by log ID."""
+        try:
+            service = DataUploadService()
+            result = service.delete_upload_data(
+                log_id=log_id,
+                user_id=request.user.id
+            )
+            
+            return Response(result, status=status.HTTP_200_OK)
+            
+        except DataUploadError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'서버 오류가 발생했습니다: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

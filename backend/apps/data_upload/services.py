@@ -176,3 +176,35 @@ class DataUploadService:
             }
         
         return statistics
+    
+    @transaction.atomic
+    def delete_upload_data(self, log_id: int, user_id: int) -> Dict[str, Any]:
+        """
+        업로드 데이터 삭제.
+        
+        Args:
+            log_id: 업로드 로그 ID
+            user_id: 삭제 요청한 사용자 ID
+            
+        Returns:
+            Dict: 삭제 결과
+            
+        Raises:
+            DataUploadError: 로그를 찾을 수 없거나 삭제 권한이 없는 경우
+        """
+        # Get upload log
+        upload_log = self.repository.get_upload_log_by_id(log_id)
+        if not upload_log:
+            raise DataUploadError(f'업로드 로그를 찾을 수 없습니다. (ID: {log_id})')
+        
+        # Delete associated data
+        deleted_count = self.repository.delete_uploaded_data_by_log(log_id)
+        
+        # Delete upload log
+        self.repository.delete_upload_log(log_id)
+        
+        return {
+            'message': '데이터가 성공적으로 삭제되었습니다.',
+            'deleted_records': deleted_count,
+            'log_id': log_id,
+        }

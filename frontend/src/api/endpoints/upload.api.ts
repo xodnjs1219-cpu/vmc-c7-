@@ -57,3 +57,12 @@ export const getDataStatistics = async (): Promise<DataStatistics> => {
   const { data } = await apiClient.get<DataStatistics>(API_ENDPOINTS.DATA_UPLOAD.STATISTICS);
   return data;
 };
+
+/**
+ * Delete uploaded data
+ * DELETE /api/data-upload/delete/<log_id>/
+ */
+export const deleteUploadData = async (logId: number): Promise<{ message: string; deleted_records: number }> => {
+  const { data } = await apiClient.delete(`${API_ENDPOINTS.DATA_UPLOAD.DELETE}${logId}/`);
+  return data;
+};
