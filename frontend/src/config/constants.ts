@@ -1,5 +1,20 @@
-// API Base URL
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+declare global {
+  interface Window {
+    __APP_CONFIG__?: {
+      apiBaseUrl?: string;
+    };
+  }
+}
+
+const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const runtimeConfig =
+  typeof window !== 'undefined' ? window.__APP_CONFIG__ : undefined;
+
+// API Base URL resolves in order: runtime config → build-time env → default fallback
+export const API_BASE_URL =
+  runtimeConfig?.apiBaseUrl ||
+  import.meta.env.VITE_API_BASE_URL ||
+  DEFAULT_API_BASE_URL;
 
 // API 엔드포인트
 export const API_ENDPOINTS = {

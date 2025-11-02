@@ -6,6 +6,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirPath = path.dirname(currentFilePath);
+const clientConfig = {
+  apiBaseUrl:
+    process.env.VITE_API_BASE_URL ||
+    process.env.API_BASE_URL ||
+    'http://localhost:8000',
+};
+
+// Expose runtime configuration to client bundle
+app.get('/config.js', (_req, res) => {
+  res.type('application/javascript');
+  res.send(`window.__APP_CONFIG__ = ${JSON.stringify(clientConfig)};`);
+});
 
 // Serve static assets exported by Vite build
 app.use(express.static(path.join(currentDirPath, 'dist')));
